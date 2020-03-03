@@ -1,0 +1,80 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.1 as base
+
+EXPOSE 8080
+
+ENV \
+    APP_ROOT=/opt/app-root \
+    HOME=/opt/app-root/src \
+    PATH=/opt/app-root/src/bin:/opt/app-root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    PLATFORM="el8" \
+    PYTHON_VERSION=3.8.1 \
+    PATH=$HOME/.local/bin/:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=UTF-8 \
+    LANG=C.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    PIP_NO_CACHE_DIR=off
+
+RUN mkdir -p ${HOME} \
+    && useradd -u 1001 -r -g 0 -d ${HOME} -s /sbin/nologin \
+      -c "Default Application User" default \
+    && chown -R 1001:0 ${APP_ROOT}
+
+RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
+    && yum -y --setopt=tsflags=nodocs update yum \
+    && yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS \
+    && rpm -V $INSTALL_PKGS \
+    && yum -y clean all --enablerepo='*'
+
+FROM base as pybuild
+
+# Build utils
+RUN INSTALL_PKGS="gcc-gfortran libffi-devel glibc-langpack-en libtool make \
+            autoconf binutils gcc-c++ openssl-devel expat-devel xz xz-devel \
+            ncurses-devel sqlite-devel readline bzip2-devel" \
+    && yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS \
+    && yum -y clean all --enablerepo='*'
+
+# download cpython and extract source to /usr/src/python
+# compile cpython and install (/usr/local)
+# remove python object files from build process
+# remove cpython sources
+
+ADD https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz ./
+# RUN curl --output python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+RUN mv Python-$PYTHON_VERSION.tar.xz python.tar.xz \
+        && mkdir -p /usr/src/python \
+	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+	&& rm python.tar.xz \
+    && cd /usr/src/python \
+    \
+	&& ./configure \
+		--enable-optimizations \
+#		--enable-option-checking=fatal \
+#	&& make -j "$(nproc)" \
+	&& make -j "$(nproc)" build_all\
+        && make install \
+	&& ldconfig \
+	\
+	&& find /usr/local -depth \
+		\( \
+			\( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+			-o \
+			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+		\) -exec rm -rf '{}' + \
+	&& rm -rf /usr/src/python \
+    && python3 --version
+
+FROM base
+
+COPY --from=pybuild /usr/local /usr/local
+
+RUN \
+	pip3 install --upgrade --no-cache-dir pip \
+    && pip3 install --no-cache-dir virtualenv \
+    && virtualenv ${APP_ROOT}
+
+USER 1001
+
+WORKDIR ${HOME}
