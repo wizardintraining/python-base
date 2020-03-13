@@ -10,14 +10,9 @@ ENV \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     LANG=C.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
     PIP_NO_CACHE_DIR=off
-
-RUN mkdir -p ${HOME} && \
-    useradd -u 1001 -r -g 0 -d ${HOME} -s /sbin/nologin \
-      -c "Default Application User" default && \
-    chown -R 1001:0 ${APP_ROOT}
 
 RUN INSTALL_PKGS="tar \
         unzip \
@@ -35,9 +30,10 @@ RUN INSTALL_PKGS="tar \
     yum -y clean all --enablerepo='*'
 
 RUN \
-    # fix-permissions ${APP_ROOT} -P && \
-    # rpm-file-permissions && \
-    virtualenv-$PYTHON_VERSION ${APP_ROOT}
+    mkdir -p ${HOME} && \
+    virtualenv-$PYTHON_VERSION ${APP_ROOT} && \
+    chgrp -R 0 ${APP_ROOT} && \
+    chmod -R g=u ${APP_ROOT}
 
 USER 1001
 
