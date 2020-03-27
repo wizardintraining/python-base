@@ -9,9 +9,6 @@ ENV \
     PATH=$HOME/.local/bin/:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    LANG=C.UTF-8 \
     PIP_NO_CACHE_DIR=off
 
 RUN INSTALL_PKGS="tar \
@@ -36,6 +33,16 @@ RUN \
     chmod -R g=u ${APP_ROOT}
 
 USER 1001
+
+ENV \
+    APP_ROOT=/opt/app-root \
+    HOME=${APP_ROOT}/src \
+    PATH=${HOME}/bin:${APP_ROOT}/bin:${APP_ROOT}/.local/bin:${HOME}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    PLATFORM="el8" \
+    PYTHON_VERSION=3.6 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=UTF-8 \
+    PIP_NO_CACHE_DIR=off
 
 WORKDIR ${HOME}
 
