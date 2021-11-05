@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9-beta/ubi:9.0.0beta as base
+FROM registry.access.redhat.com/ubi8/ubi:8.4 as base
 
 EXPOSE 8080
 
@@ -12,9 +12,9 @@ ENV \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     PIP_NO_CACHE_DIR=off \
-    YUM_OPTS="--disableplugin=subscription-manager --setopt=tsflags=nodocs "
+    YUM_OPTS="--disablerepo=* --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos --setopt=tsflags=nodocs"
 
-RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi" \
+RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
     && yum -y ${YUM_OPTS} update yum \
     && yum -y ${YUM_OPTS} install $INSTALL_PKGS \
     && yum -V $INSTALL_PKGS \
