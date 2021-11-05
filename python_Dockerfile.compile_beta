@@ -17,7 +17,6 @@ ENV \
 RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
     && yum -y ${YUM_OPTS} update yum \
     && yum -y ${YUM_OPTS} install ${INSTALL_PKGS} \
-    && yum version ${INSTALL_PKGS} \
     && yum -y clean all --enablerepo='*'
 
 FROM base as pybuild
