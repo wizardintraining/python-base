@@ -12,12 +12,12 @@ ENV \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     PIP_NO_CACHE_DIR=off \
-    YUM_OPTS="--disablerepo=* --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos --setopt=tsflags=nodocs"
+    YUM_OPTS="--disablerepo=* --disableplugin=subscription-manager --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos --setopt=tsflags=nodocs"
 
 RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
     && yum -y ${YUM_OPTS} update yum \
-    && yum -y ${YUM_OPTS} install $INSTALL_PKGS \
-    && yum -V $INSTALL_PKGS \
+    && yum -y ${YUM_OPTS} install ${INSTALL_PKGS} \
+    && yum version ${INSTALL_PKGS} \
     && yum -y clean all --enablerepo='*'
 
 FROM base as pybuild
