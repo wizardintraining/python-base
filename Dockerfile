@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.1
+FROM registry.access.redhat.com/ubi8/ubi:8.4
 
 ENV \
     APP_ROOT=/opt/app-root \
@@ -12,8 +12,8 @@ ENV \
 RUN INSTALL_PKGS="tar \
         unzip \
         xz \
-        python36 \
-        python36-devel \
+        python39 \
+        python39-devel \
         python3-setuptools \
         python3-pip \
         python3-virtualenv \

@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.4 as base
+FROM registry.access.redhat.com/ubi9-beta/ubi:9.0.0beta as base
 
 EXPOSE 8080
 
@@ -6,18 +6,18 @@ ENV \
     APP_ROOT=/opt/app-root \
     HOME=/opt/app-root/src \
     PATH=/opt/app-root/src/bin:/opt/app-root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
-    PLATFORM="el8" \
-    PYTHON_VERSION=3.9.6 \
+    PLATFORM="el9" \
+    PYTHON_VERSION=3.10.0 \
     PATH=$HOME/.local/bin/:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     PIP_NO_CACHE_DIR=off
 
 RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
-    && yum -y --setopt=tsflags=nodocs update yum \
-    && yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS \
-    && rpm -V $INSTALL_PKGS \
-    && yum -y clean all --enablerepo='*'
+    && dnf -y --setopt=tsflags=nodocs update yum \
+    && dnf -y --setopt=tsflags=nodocs install $INSTALL_PKGS \
+    && dnf -V $INSTALL_PKGS \
+    && dnf -y clean all --enablerepo='*'
 
 FROM base as pybuild
 
@@ -43,9 +43,11 @@ RUN mv Python-$PYTHON_VERSION.tar.xz python.tar.xz \
     \
 	&& ./configure \
 		--enable-optimizations \
+        --quiet \
 #		--enable-option-checking=fatal \
 #	&& make -j "$(nproc)" \
 	&& make -j "$(nproc)" build_all\
+# make altinstall would not include a python3 link
         && make install \
 	&& ldconfig \
 	\
