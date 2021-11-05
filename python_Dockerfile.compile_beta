@@ -12,7 +12,7 @@ ENV \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     PIP_NO_CACHE_DIR=off \
-    YUM_OPTS="--disablerepo=* --enablerepo=ubi-8-appstream --enablerepo=ubi-8-baseos --setopt=tsflags=nodocs "
+    YUM_OPTS="--disablerepo=* --enablerepo=ubi-9-appstream --enablerepo=ubi-9-baseos --setopt=tsflags=nodocs "
 
 RUN INSTALL_PKGS="tar unzip xz gcc-gfortran libffi-devel" \
     && yum -y ${YUM_OPTS} update yum \
